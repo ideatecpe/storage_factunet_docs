@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  sunat-files-service:
+    build: .
+    container_name: sunat-files-service
+    restart: always
+    ports:
+      - "3003:3003"
+    env_file:
+      - .env
