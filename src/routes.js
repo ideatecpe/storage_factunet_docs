@@ -28,17 +28,18 @@ const upload = multer({
  */
 router.post('/upload', upload.single('file'), async (req, res) => {
   try {
-    const { ruc, tipo } = req.body;
+    const { ruc, tipo, entorno } = req.body;
 
     if (!req.file) return res.status(400).json({ error: 'No se envió ningún archivo' });
     if (!ruc) return res.status(400).json({ error: 'El campo ruc es requerido' });
     if (!tipo) return res.status(400).json({ error: 'El campo tipo es requerido' });
+    if (!entorno) return res.status(400).json({ error: 'El campo entorno es requerido' });
     if (!/^\d{11}$/.test(ruc)) return res.status(400).json({ error: 'RUC inválido, debe tener 11 dígitos' });
 
     const filename = req.file.originalname;
 
     // Encola el archivo — responde inmediato al usuario
-    encolar({ ruc, tipo, filename, buffer: req.file.buffer });
+    encolar({ ruc, tipo, entorno, filename, buffer: req.file.buffer });
 
     return res.status(202).json({
       ok: true,
@@ -46,6 +47,7 @@ router.post('/upload', upload.single('file'), async (req, res) => {
       archivo: filename,
       ruc,
       tipo,
+      entorno,
     });
   } catch (err) {
     console.error('[UPLOAD ERROR]', err.message);

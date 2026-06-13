@@ -30,11 +30,13 @@ function normalizeTipo(tipo) {
 }
 
 /**
- * Construye la ruta remota: /Facturacion/{ruc}/{tipo}/
+ * Construye la ruta remota: /Facturacion/{entorno}/{ruc}/{tipo}/
  */
-function buildRemotePath(ruc, tipo, filename = '') {
+function buildRemotePath(ruc, tipo, filename = '', entorno = '') {
   const tipoNorm = normalizeTipo(tipo);
-  const base = `${BASE_PATH}/${ruc}/${tipoNorm}`;
+  const base = entorno
+    ? `${BASE_PATH}/${entorno}/${ruc}/${tipoNorm}`
+    : `${BASE_PATH}/${ruc}/${tipoNorm}`;
   return filename ? `${base}/${filename}` : base;
 }
 
@@ -59,13 +61,13 @@ async function ensureRemoteDir(sftp, remotePath) {
  * @param {string} filename - Nombre del archivo (ej: F001-1.zip)
  * @param {Buffer} fileBuffer - Contenido del archivo
  */
-async function uploadFile(ruc, tipo, filename, fileBuffer) {
+async function uploadFile(ruc, tipo, filename, fileBuffer, entorno = '') {
   const sftp = new SftpClient();
   try {
     await sftp.connect(sftpConfig);
-    const remotDir = buildRemotePath(ruc, tipo);
+    const remotDir = buildRemotePath(ruc, tipo, '', entorno);
     await ensureRemoteDir(sftp, remotDir);
-    const remotePath = buildRemotePath(ruc, tipo, filename);
+    const remotePath = buildRemotePath(ruc, tipo, filename, entorno);
     await sftp.put(fileBuffer, remotePath);
     return { success: true, path: remotePath };
   } finally {

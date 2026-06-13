@@ -10,8 +10,8 @@ let procesando = false;
 /**
  * Agrega un archivo a la cola y arranca el procesamiento
  */
-function encolar({ ruc, tipo, filename, buffer }) {
-  cola.push({ ruc, tipo, filename, buffer, intentos: 0 });
+function encolar({ ruc, tipo, entorno, filename, buffer }) {
+  cola.push({ ruc, tipo, entorno, filename, buffer, intentos: 0 });
   console.log(`[COLA] Encolado: ${filename} (${cola.length} en cola)`);
   procesarCola();
 }
@@ -25,10 +25,10 @@ async function procesarCola() {
 
   while (cola.length > 0) {
     const tarea = cola[0];
-    const { ruc, tipo, filename, buffer } = tarea;
+    const { ruc, tipo, entorno, filename, buffer } = tarea;
 
     try {
-      await uploadFile(ruc, tipo, filename, buffer);
+      await uploadFile(ruc, tipo, filename, buffer, entorno);
       console.log(`[COLA ✅] Subido correctamente: ${filename}`);
       cola.shift(); // Elimina de la cola solo si tuvo éxito
     } catch (err) {
@@ -64,6 +64,7 @@ function estadoCola() {
       archivo: t.filename,
       ruc: t.ruc,
       tipo: t.tipo,
+      entorno: t.entorno,
       intentos: t.intentos,
     })),
   };
