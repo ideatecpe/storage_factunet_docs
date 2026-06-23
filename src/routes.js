@@ -64,23 +64,26 @@ router.get('/cola', (req, res) => {
 });
 
 /**
- * GET /files/:ruc/:tipo
+ * GET /files/:ruc/:tipo?entorno=produccion
  * Lista todos los ZIPs de una carpeta
- * 
- * Ejemplo: GET /files/20123456789/facturas
+ *
+ * Ejemplo: GET /files/20123456789/facturas?entorno=produccion
  */
 router.get('/:ruc/:tipo', async (req, res) => {
   try {
     const { ruc, tipo } = req.params;
+    const { entorno } = req.query;
 
     if (!/^\d{11}$/.test(ruc)) return res.status(400).json({ error: 'RUC inválido' });
+    if (!entorno) return res.status(400).json({ error: 'El query param entorno es requerido' });
 
-    const archivos = await listFiles(ruc, tipo);
+    const archivos = await listFiles(ruc, tipo, entorno);
 
     return res.json({
       ok: true,
       ruc,
       tipo,
+      entorno,
       total: archivos.length,
       archivos,
     });
@@ -91,22 +94,24 @@ router.get('/:ruc/:tipo', async (req, res) => {
 });
 
 /**
- * GET /files/:ruc/:tipo/:filename
+ * GET /files/:ruc/:tipo/:filename?entorno=produccion
  * Descarga un ZIP específico
- * 
- * Ejemplo: GET /files/20123456789/facturas/F001-1.zip
+ *
+ * Ejemplo: GET /files/20123456789/facturas/F001-1.zip?entorno=produccion
  */
 router.get('/:ruc/:tipo/:filename', async (req, res) => {
   try {
     const { ruc, tipo, filename } = req.params;
+    const { entorno } = req.query;
 
     if (!/^\d{11}$/.test(ruc)) return res.status(400).json({ error: 'RUC inválido' });
     if (!filename.endsWith('.zip')) return res.status(400).json({ error: 'Solo se pueden descargar archivos ZIP' });
+    if (!entorno) return res.status(400).json({ error: 'El query param entorno es requerido' });
 
-    const existe = await fileExists(ruc, tipo, filename);
+    const existe = await fileExists(ruc, tipo, filename, entorno);
     if (!existe) return res.status(404).json({ error: 'Archivo no encontrado' });
 
-    const buffer = await downloadFile(ruc, tipo, filename);
+    const buffer = await downloadFile(ruc, tipo, filename, entorno);
 
     res.setHeader('Content-Type', 'application/zip');
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);

@@ -79,11 +79,11 @@ async function uploadFile(ruc, tipo, filename, fileBuffer, entorno = '') {
  * Descarga un archivo ZIP del VPS via SFTP
  * @returns {Buffer} contenido del archivo
  */
-async function downloadFile(ruc, tipo, filename) {
+async function downloadFile(ruc, tipo, filename, entorno = '') {
   const sftp = new SftpClient();
   try {
     await sftp.connect(sftpConfig);
-    const remotePath = buildRemotePath(ruc, tipo, filename);
+    const remotePath = buildRemotePath(ruc, tipo, filename, entorno);
     const buffer = await sftp.get(remotePath);
     return buffer;
   } finally {
@@ -95,11 +95,11 @@ async function downloadFile(ruc, tipo, filename) {
  * Lista los archivos ZIP de una carpeta en el VPS
  * @returns {Array} lista de archivos con nombre, tamaño y fecha
  */
-async function listFiles(ruc, tipo) {
+async function listFiles(ruc, tipo, entorno = '') {
   const sftp = new SftpClient();
   try {
     await sftp.connect(sftpConfig);
-    const remotePath = buildRemotePath(ruc, tipo);
+    const remotePath = buildRemotePath(ruc, tipo, '', entorno);
 
     // Verifica si la carpeta existe
     const exists = await sftp.exists(remotePath);
@@ -112,7 +112,7 @@ async function listFiles(ruc, tipo) {
         nombre: f.name,
         tamaño: f.size,
         fecha: new Date(f.modifyTime).toLocaleString('es-PE', { timeZone: 'America/Lima' }),
-        ruta: buildRemotePath(ruc, tipo, f.name),
+        ruta: buildRemotePath(ruc, tipo, f.name, entorno),
       }));
   } finally {
     await sftp.end();
@@ -122,11 +122,11 @@ async function listFiles(ruc, tipo) {
 /**
  * Verifica si un archivo existe en el VPS
  */
-async function fileExists(ruc, tipo, filename) {
+async function fileExists(ruc, tipo, filename, entorno = '') {
   const sftp = new SftpClient();
   try {
     await sftp.connect(sftpConfig);
-    const remotePath = buildRemotePath(ruc, tipo, filename);
+    const remotePath = buildRemotePath(ruc, tipo, filename, entorno);
     const exists = await sftp.exists(remotePath);
     return !!exists;
   } finally {
